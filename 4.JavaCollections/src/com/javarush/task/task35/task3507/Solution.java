@@ -8,6 +8,7 @@ ClassLoader - что это такое?
 public class Solution {
     public static void main(String[] args) {
         String s = "";
+        int f = 1;
         Set<? extends Animal> allAnimals = getAllAnimals(Solution.class.getProtectionDomain().getCodeSource().getLocation().getPath() + Solution.class.getPackage().getName().replaceAll("[.]", "/") + "/data");
         System.out.println(allAnimals);
     }

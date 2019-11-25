@@ -8,28 +8,6 @@ MVC - простая версия
 */
 public class Solution {
     public static void main(String[] args) {
-        System.out.println("Test for home Linux");
-        new Solution().fireShowDataEvent();
-    }
-
-    public List<String> getData() {
-        List<String> data = new ArrayList<String>() {{
-            add("First string");
-            add("Second string");
-            add("Third string");
-        }};
-        return data;
-    }
-
-    public void fireShowDataEvent() {
-        System.out.println(onShowDataList());
-    }
-
-    public List<String> getStringDataList() {
-        return getData();
-    }
-
-    public List<String> onShowDataList() {
-        return getStringDataList();
+        new View().fireShowDataEvent();
     }
 }

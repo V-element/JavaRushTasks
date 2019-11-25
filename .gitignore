@@ -13,6 +13,7 @@ target/
 *.info
 *.properties
 *.jar
+*.xml
 
 /out/
 /JavaRushPlugin.properties

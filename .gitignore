@@ -8,13 +8,8 @@ target/
 *.iml
 *.iws
 *.jrtc
-<<<<<<< HEAD
 #*.java
 #*.class
-=======
-*.java
-*.class
->>>>>>> Second commit
 *.info
 *.properties
 *.jar
@@ -22,20 +17,10 @@ target/
 /1.JavaSyntax/
 /2.JavaCore/
 /3.JavaMultithreading/
-<<<<<<< HEAD
-#/4.JavaCollections/
 /5.OnlineInternship/
 /8.Games/
-=======
-/4.JavaCollections/
-/5.OnlineInternship/
->>>>>>> Second commit
 /out/
 /JavaRushPlugin.properties
 /Instruction.png
 /out.log
-<<<<<<< HEAD
 /out.log.*
-=======
-/out.log.*
->>>>>>> Second commit

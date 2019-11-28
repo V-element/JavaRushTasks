@@ -21,7 +21,7 @@ public class RedBlackTree {
     }
 
     public boolean isEmpty() {
-        return header.left == EMPTY;
+        return header.right == EMPTY;
     }
 
     public void clear() {
@@ -37,7 +37,7 @@ public class RedBlackTree {
             parent = current;
             current = item > current.element ? current.right : current.left;
 
-            if (current.left.color == Color.RED && current.right.color == Color.BLACK) {
+            if (current.left.color == Color.RED && current.right.color == Color.RED) {
                 reorient(item);
             }
         }
@@ -96,9 +96,9 @@ public class RedBlackTree {
     }
 
     private Node rotateWithRightNode(Node element) {
-        Node left = element.left;
-        element.left = left.right;
-        left.right = element;
+        Node left = element.right;
+        element.right = left.left;
+        left.left = element;
         return left;
     }
 

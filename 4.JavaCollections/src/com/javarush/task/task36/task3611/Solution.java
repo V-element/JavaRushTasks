@@ -27,14 +27,14 @@ public class Solution {
 
 
         for (int i = 0; i < humanRelationships.length; i++) {
-                for (int j = 0; j < humanRelationships[i].length; j++) {
-                    if (j != index && humanRelationships[i][j]) {
-                        set.add(j);
-                        if (deep > 1) {
-                            set.addAll(getAllFriendsAndPotentialFriends(j, deep - 1));
-                        }
+            for (int j = 0; j < humanRelationships[i].length; j++) {
+                if (j != index && humanRelationships[i][j]) {
+                    set.add(j);
+                    if (deep > 1) {
+                        set.addAll(getAllFriendsAndPotentialFriends(j, deep - 1));
                     }
                 }
+            }
         }
 
         set.remove(index);

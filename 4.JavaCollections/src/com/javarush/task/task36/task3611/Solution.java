@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 public class Solution {
     private boolean[][] humanRelationships;
-
+ 
     public static void main(String[] args) {
         Solution solution = new Solution();
         solution.humanRelationships = generateRelationships();
@@ -25,16 +25,27 @@ public class Solution {
         //напишите тут ваш код
         Set<Integer> set = new TreeSet<>();
 
-
         for (int i = 0; i < humanRelationships.length; i++) {
-            for (int j = 0; j < humanRelationships[i].length; j++) {
-                if (j != index && humanRelationships[i][j]) {
+            if ((i < index) && (index < humanRelationships.length) && humanRelationships[index][i]) {
+                set.add(i);
+                if (deep > 1) {
+                    set.addAll(getAllFriendsAndPotentialFriends(i, deep - 1));
+                }
+            } else if ((i > index) && humanRelationships[i][index]) {
+                set.add(i);
+                if (deep > 1) {
+                    set.addAll(getAllFriendsAndPotentialFriends(i, deep - 1));
+                }
+            }
+
+            /*for (int j = 0; j < humanRelationships[i].length; j++) {
+                if (humanRelationships[i][j]) {
                     set.add(j);
                     if (deep > 1) {
                         set.addAll(getAllFriendsAndPotentialFriends(j, deep - 1));
                     }
                 }
-            }
+            }*/
         }
 
         set.remove(index);

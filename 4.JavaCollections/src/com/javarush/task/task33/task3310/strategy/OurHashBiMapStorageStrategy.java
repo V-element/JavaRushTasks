@@ -3,8 +3,8 @@ package com.javarush.task.task33.task3310.strategy;
 import java.util.HashMap;
 
 public class OurHashBiMapStorageStrategy implements StorageStrategy {
-    private HashMap<Long, String> k2v;
-    private HashMap<String, Long> v2k;
+    private HashMap<Long, String> k2v = new HashMap<>();
+    private HashMap<String, Long> v2k = new HashMap<>();
 
     @Override
     public boolean containsKey(Long key) {
@@ -18,34 +18,17 @@ public class OurHashBiMapStorageStrategy implements StorageStrategy {
 
     @Override
     public void put(Long key, String value) {
-        int hash = hash(key);
-        int i = indexFor(hash, table.length);
-
-        if (table[i] == null)
-            createEntry(hash, key, value, i);
-        else {
-            for (Entry entry = table[i].getEntry(); entry != null; entry = entry.next) {
-                Long k;
-                if (entry.hash == hash && ((k = entry.key) == key || key.equals(k)))
-                    entry.value = value;
-            }
-            addEntry(hash, key, value, i);
-        }
+        k2v.put(key, value);
+        v2k.put(value, key);
     }
 
     @Override
     public Long getKey(String value) {
-        for (int i = 0; i < table.length ; i++) {
-            if (table[i] == null) continue;
-            for (Entry e = table[i].getEntry(); e != null; e = e.next)
-                if (value.equals(e.value))
-                    return e.key;
-        }
-        return null;
+        return v2k.get(value);
     }
 
     @Override
     public String getValue(Long key) {
-        return getEntry(key).getValue();
+        return k2v.get(key);
     }
 }

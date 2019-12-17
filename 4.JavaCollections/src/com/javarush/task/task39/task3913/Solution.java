@@ -5,7 +5,10 @@ import java.util.Date;
 
 public class Solution {
     public static void main(String[] args) {
-        /*LogParser logParser = new LogParser(Paths.get("c:/logs/"));
-        System.out.println(logParser.getNumberOfUniqueIPs(null, new Date()));*/
+        LogParser logParser = new LogParser(Paths.get("d:/logs/"));
+        System.out.println(logParser.getNumberOfUniqueIPs(null, new Date()));
+        System.out.println(logParser.getNumberOfUniqueIPs(new Date(), null));
+        System.out.println(logParser.getNumberOfUsers(new Date(), null));
+        System.out.println(logParser.getDateWhenUserDoneTask("Vasya Pupkin", 15, null, new Date()));
     }
 }

@@ -1,19 +1,20 @@
 package com.javarush.task.task39.task3913;
 
-import com.javarush.task.task39.task3913.query.DateQuery;
-import com.javarush.task.task39.task3913.query.EventQuery;
-import com.javarush.task.task39.task3913.query.IPQuery;
-import com.javarush.task.task39.task3913.query.UserQuery;
+import com.javarush.task.task39.task3913.query.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.lang.reflect.Array;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
     private Path logDir;
     private List<String> entries = new ArrayList<>();
     private List<File> fileList = new ArrayList<>();
@@ -82,7 +83,7 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
             String[] stringArray = s.split("\t");
             try {
                 Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
-                if (status.equals(Status.valueOf(stringArray[4])) && dateBetween(foundDate, after, before)) {
+                if ((status == null || status.equals(Status.valueOf(stringArray[4]))) && dateBetween(foundDate, after, before)) {
                     DatesForStatus.add(foundDate);
                 }
             } catch (Exception e) {
@@ -384,51 +385,305 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
 
     @Override
     public int getNumberOfAllEvents(Date after, Date before) {
-        return 0;
+        return getAllEvents(after, before).size();
     }
 
     @Override
     public Set<Event> getAllEvents(Date after, Date before) {
-        return null;
+        Set<Event> eventSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (dateBetween(foundDate, after, before)) {
+                    eventSet.add(Event.valueOf(getEventName(stringArray[3])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eventSet;
     }
 
     @Override
     public Set<Event> getEventsForIP(String ip, Date after, Date before) {
-        return null;
+        Set<Event> eventSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (ip.equals(stringArray[0]) && dateBetween(foundDate, after, before)) {
+                    eventSet.add(Event.valueOf(getEventName(stringArray[3])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eventSet;
     }
 
     @Override
     public Set<Event> getEventsForUser(String user, Date after, Date before) {
-        return null;
+        Set<Event> eventSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (user.equals(stringArray[1]) && dateBetween(foundDate, after, before)) {
+                    eventSet.add(Event.valueOf(getEventName(stringArray[3])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eventSet;
     }
 
     @Override
     public Set<Event> getFailedEvents(Date after, Date before) {
-        return null;
+        Set<Event> eventSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Status.valueOf(stringArray[4]).equals(Status.FAILED) && dateBetween(foundDate, after, before)) {
+                    eventSet.add(Event.valueOf(getEventName(stringArray[3])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eventSet;
     }
 
     @Override
     public Set<Event> getErrorEvents(Date after, Date before) {
-        return null;
+        Set<Event> eventSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Status.valueOf(stringArray[4]).equals(Status.ERROR) && dateBetween(foundDate, after, before)) {
+                    eventSet.add(Event.valueOf(getEventName(stringArray[3])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eventSet;
     }
 
     @Override
     public int getNumberOfAttemptToSolveTask(int task, Date after, Date before) {
-        return 0;
+        int numberOfAttempt = 0;
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Event.valueOf(getEventName(stringArray[3])).equals(Event.SOLVE_TASK)
+                        && task == Integer.parseInt(stringArray[3].replaceAll("\\D",""))
+                        && dateBetween(foundDate, after, before)) {
+                    numberOfAttempt++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return numberOfAttempt;
     }
 
     @Override
     public int getNumberOfSuccessfulAttemptToSolveTask(int task, Date after, Date before) {
-        return 0;
+        int numberOfAttempt = 0;
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Event.valueOf(getEventName(stringArray[3])).equals(Event.DONE_TASK)
+                        && task == Integer.parseInt(stringArray[3].replaceAll("\\D",""))
+                        && dateBetween(foundDate, after, before)) {
+                    numberOfAttempt++;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return numberOfAttempt;
     }
 
     @Override
     public Map<Integer, Integer> getAllSolvedTasksAndTheirNumber(Date after, Date before) {
-        return null;
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Event.valueOf(getEventName(stringArray[3])).equals(Event.SOLVE_TASK)
+                        && dateBetween(foundDate, after, before)) {
+                    int task = Integer.parseInt(stringArray[3].replaceAll("\\D",""));
+                    if (map.containsKey(task)) {
+                        map.put(task, map.get(task) + 1);
+                    } else {
+                        map.put(task, 1);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return map;
     }
 
     @Override
     public Map<Integer, Integer> getAllDoneTasksAndTheirNumber(Date after, Date before) {
-        return null;
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (Event.valueOf(getEventName(stringArray[3])).equals(Event.DONE_TASK)
+                        && dateBetween(foundDate, after, before)) {
+                    int task = Integer.parseInt(stringArray[3].replaceAll("\\D",""));
+                    if (map.containsKey(task)) {
+                        map.put(task, map.get(task) + 1);
+                    } else {
+                        map.put(task, 1);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return map;
+    }
+
+    public Set<Status> getStatuses(Date after, Date before) {
+        Set<Status> statusSet = new HashSet<>();
+
+        for (String s: entries) {
+            String[] stringArray = s.split("\t");
+            try {
+                Date foundDate = new SimpleDateFormat("d.M.y H:m:s").parse(stringArray[2]);
+                if (dateBetween(foundDate, after, before)) {
+                    statusSet.add(Status.valueOf(stringArray[4]));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return statusSet;
+    }
+
+    private String getMatch(String logLine, String groupName) {
+        String match = null;
+        Matcher m = Pattern.compile(
+                "(?<ip>[\\d]+.[\\d]+.[\\d]+.[\\d]+)\\s" +
+                        "(?<user>[a-zA-Z ]+)\\s" +
+                        "(?<date>[\\d]+.[\\d]+.[\\d]+ [\\d]+:[\\d]+:[\\d]+)\\s" +
+                        "(?<event>[\\w]+)\\s?(" +
+                        "(?<taskNumber>[\\d]+)|)\\s" +
+                        "(?<status>[\\w]+)")
+                .matcher(logLine);
+        if (m.find()) {
+            match = m.group(groupName);
+        }
+        return match;
+    }
+
+    private String getQLMatch(String query, String groupName) {
+        String match = null;
+        Matcher m = Pattern.compile(
+                "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\"")
+                .matcher(query);
+        if (m.find()) {
+            match = m.group(groupName);
+        }
+        return match;
+    }
+
+    private List<String> getAllLogLines() {
+        List<String> logLines = new ArrayList<>();
+
+        try {
+            List<Path> files = Files.list(logDir)
+                    .filter(p -> p.toString()
+                            .endsWith(".log"))
+                    .collect(Collectors.toList());
+            for (Path log : files) {
+                logLines.addAll(Files.readAllLines(log));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return logLines;
+    }
+
+    @Override
+    public Set<Object> execute(String query) {
+        Set<Object> returnData = new HashSet<>();
+
+        String field1 = getQLMatch(query, "field1");
+        String field2 = getQLMatch(query, "field2");
+        String value1 = getQLMatch(query, "value1");
+
+        if (field1 != null && field2 != null && value1 != null) {
+            for (String logLine : getAllLogLines()) {
+                if (getMatch(logLine, field2).equals(value1)) {
+                    if (field1.equals("date")) {
+                        try {
+                            returnData.add(new SimpleDateFormat("d.M.y H:m:s").parse(getMatch(logLine, field1)));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else if (field1.equals("event")) {
+                        returnData.add(Event.valueOf(getMatch(logLine, field1)));
+                    } else if (field1.equals("status")) {
+                        returnData.add(Status.valueOf(getMatch(logLine, field1)));
+                    } else {
+                        returnData.add(getMatch(logLine, field1));
+                    }
+
+                }
+            }
+        }
+
+        switch (query) {
+            case "get ip":
+                returnData = new HashSet<>(getUniqueIPs(null, null));
+                break;
+            case "get user":
+                returnData = new HashSet<>(getAllUsers());
+                break;
+            case "get date":
+                returnData = new HashSet<>(getDatesForStatus(null, null,null));
+                break;
+            case "get event":
+                returnData = new HashSet<>(getAllEvents(null, null));
+                break;
+            case "get status":
+                returnData = new HashSet<>(getStatuses(null, null));
+                break;
+        }
+
+        return returnData;
     }
 }

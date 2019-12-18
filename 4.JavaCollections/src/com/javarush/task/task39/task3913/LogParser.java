@@ -52,6 +52,15 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
 
     }
 
+    public boolean dateBetweenNotEqual(Date date, Date after, Date before) {
+
+        return (before == null && after == null
+                || after == null && before.after(date)
+                || before == null && after.before(date)
+                || (after != null && before != null && (before.after(date) && after.before(date))));
+
+    }
+
     public String getEventName(String eventName) {
         return eventName.replaceAll("\\d","").replaceAll("\\s","");
     }
@@ -611,9 +620,16 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
 
     private String getQLMatch(String query, String groupName) {
         String match = null;
-        Matcher m = Pattern.compile(
-                "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\"")
-                .matcher(query);
+        Matcher m = null;
+        if (query.contains("and date between")) {
+            m = Pattern.compile(
+                    "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\" and date between \"(?<after>.*?)\" and \"(?<before>.*?)\"")
+                    .matcher(query);
+        } else {
+            m = Pattern.compile(
+                    "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\"")
+                    .matcher(query);
+        }
         if (m.find()) {
             match = m.group(groupName);
         }
@@ -644,24 +660,57 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
         String field1 = getQLMatch(query, "field1");
         String field2 = getQLMatch(query, "field2");
         String value1 = getQLMatch(query, "value1");
+        String after = null;
+        String before = null;
+        try {
+            after = getQLMatch(query, "after");
+            before = getQLMatch(query, "before");
+        } catch (IllegalArgumentException e) {
+            //e.printStackTrace();
+        }
+
+
 
         if (field1 != null && field2 != null && value1 != null) {
             for (String logLine : getAllLogLines()) {
                 if (getMatch(logLine, field2).equals(value1)) {
-                    if (field1.equals("date")) {
+                    if (after != null || before != null) {
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("d.M.y H:m:s");
                         try {
-                            returnData.add(new SimpleDateFormat("d.M.y H:m:s").parse(getMatch(logLine, field1)));
+                            Date date = dateFormat.parse(getMatch(logLine, "date"));
+                            if (dateBetweenNotEqual(date, dateFormat.parse(after), dateFormat.parse(before))) {
+                                if (field1.equals("date")) {
+                                    try {
+                                        returnData.add(new SimpleDateFormat("d.M.y H:m:s").parse(getMatch(logLine, field1)));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (field1.equals("event")) {
+                                    returnData.add(Event.valueOf(getMatch(logLine, field1)));
+                                } else if (field1.equals("status")) {
+                                    returnData.add(Status.valueOf(getMatch(logLine, field1)));
+                                } else {
+                                    returnData.add(getMatch(logLine, field1));
+                                }
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    } else if (field1.equals("event")) {
-                        returnData.add(Event.valueOf(getMatch(logLine, field1)));
-                    } else if (field1.equals("status")) {
-                        returnData.add(Status.valueOf(getMatch(logLine, field1)));
                     } else {
-                        returnData.add(getMatch(logLine, field1));
+                        if (field1.equals("date")) {
+                            try {
+                                returnData.add(new SimpleDateFormat("d.M.y H:m:s").parse(getMatch(logLine, field1)));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else if (field1.equals("event")) {
+                            returnData.add(Event.valueOf(getMatch(logLine, field1)));
+                        } else if (field1.equals("status")) {
+                            returnData.add(Status.valueOf(getMatch(logLine, field1)));
+                        } else {
+                            returnData.add(getMatch(logLine, field1));
+                        }
                     }
-
                 }
             }
         }

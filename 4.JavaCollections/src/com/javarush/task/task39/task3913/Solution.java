@@ -10,5 +10,6 @@ public class Solution {
         System.out.println(logParser.getNumberOfUniqueIPs(new Date(), null));
         System.out.println(logParser.getNumberOfUsers(new Date(), null));
         System.out.println(logParser.getNumberOfSuccessfulAttemptToSolveTask(1, null, null));
+        System.out.println(logParser.execute("get ip for user = \"Eduard Petrovich Morozko Moroz\""));
     }
 }

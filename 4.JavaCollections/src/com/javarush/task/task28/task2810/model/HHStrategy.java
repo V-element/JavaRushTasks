@@ -17,9 +17,14 @@ public class HHStrategy implements Strategy {
     public List<Vacancy> getVacancies(String searchString) {
         try {
             Document doc = Jsoup.connect(url).referrer("https://hh.ua/search/vacancy?text=java+Kiev&page=3").userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36").get();
+            String html = doc.html();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return Collections.emptyList();
+    }
+
+    protected Document getDocument(String searchString, int page) throws IOException {
+        return null;
     }
 }

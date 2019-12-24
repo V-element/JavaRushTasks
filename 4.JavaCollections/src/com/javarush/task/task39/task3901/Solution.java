@@ -23,16 +23,22 @@ public class Solution {
             return 0;
         } else {
             char[] chars = s.toCharArray();
-            int maxLenght = 1, tempLenght = 1;
-            char previousChar = chars[0];
-            for (char ch: chars) {
-                if (previousChar != ch) {
-                    tempLenght++;
-                } else {
-                    maxLenght = Math.max(maxLenght, tempLenght);
+            int maxLenght = 1;
+            for (int i = 0; i < chars.length; i++) {
+                int tempLenght = 0;
+                HashSet<Character> charList = new HashSet<>();
+                for (int j = i; j < chars.length; j++) {
+                    if (!charList.contains(chars[j])) {
+                        tempLenght++;
+                        charList.add(chars[j]);
+                    } else {
+                        maxLenght = Math.max(maxLenght, tempLenght);
+                        break;
+                    }
                 }
+                maxLenght = Math.max(maxLenght, tempLenght);
             }
-            maxLenght = Math.max(maxLenght, tempLenght);
+
             return maxLenght;
         }
     }
